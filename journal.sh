@@ -90,3 +90,13 @@ docker compose up -d kafka
 
 docker cp kafka:/opt/bitnami/kafka/config/server.properties .
 # -> server.properties
+
+
+
+# === git
+git init
+touch .gitignore && code .gitignore
+git add .
+git commit -m "first commit"
+git remote add origin https://github.com/yzpt/upw_test_kafka_spark_docker.git
+git push --set-upstream origin main
