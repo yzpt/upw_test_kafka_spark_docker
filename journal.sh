@@ -101,4 +101,6 @@ git commit -m "first commit"
 git remote add origin https://github.com/yzpt/upw_test_kafka_spark_docker.git
 git push --set-upstream origin main
 
+touch README.MD && code README.MD
+
 git add . && git commit -m "update" && git push
