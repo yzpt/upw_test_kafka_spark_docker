@@ -44,7 +44,7 @@ def create_initial_dataframe(spark_session):
         df = spark_session \
               .readStream \
               .format("kafka") \
-              .option("kafka.bootstrap.servers", "kafka:9092") \
+              .option("kafka.bootstrap.servers", "broker:29092") \
               .option("subscribe", "test-topic") \
               .option("delimeter",",") \
               .option("startingOffsets", "earliest") \
@@ -88,23 +88,6 @@ def start_console_streaming(df):
 def print_to_console(df, epoch_id):
     df.show()
 
-# def start_cassandra_streaming(df):
-#     """
-#     Starts the streaming to table spark_streaming.random_names in cassandra
-#     """
-
-#     destination_table = df.select("destination_table").collect()[0][0]
-#     print('dest_talbe:', destination_table)
-
-#     my_query = (df.writeStream
-#                   .format("org.apache.spark.sql.cassandra")
-#                   .outputMode("append")
-#                   .option("checkpointLocation", "checkpoint")
-#                   .options(table=destination_table, keyspace="spark_streaming")
-#                   .start())
-#                 #   .foreachBatch(print_to_console)
-
-#     return my_query.awaitTermination()
 
 def start_cassandra_streaming(df):
     """
@@ -134,11 +117,8 @@ def write_streaming_data():
     df          = create_initial_dataframe(spark)
     df_final    = create_final_dataframe(df, spark)
 
-    
-    # start_console_streaming(df)
-    
-    # df_final = create_final_dataframe(df, spark)
     start_cassandra_streaming(df_final)
+    # start_console_streaming(df_final)
 
 if __name__ == '__main__':
     try:

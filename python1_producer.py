@@ -3,7 +3,7 @@ import sys
 
 if __name__ == "__main__":
     try:
-        producer = KafkaProducer(bootstrap_servers='kafka:9092')
+        producer = KafkaProducer(bootstrap_servers='localhost:9092')
     
         message = sys.argv[1]
         

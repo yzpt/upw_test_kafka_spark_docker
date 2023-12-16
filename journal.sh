@@ -31,14 +31,11 @@ python3 python2_consumer.py
 
 
 # === Spark ========================================================================
-
-
 docker compose down  spark-master spark-worker
 docker compose up -d spark-master spark-worker  
+
 # start streaming:
 docker exec -it spark-master /bin/bash -c "spark-submit --master local --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.4.1,com.datastax.spark:spark-cassandra-connector_2.12:3.4.1 /opt/bitnami/pyspark_scripts/spark_streaming.py"
-
-# ok
 
 
 # === Cassandra ========================================================================
@@ -85,15 +82,7 @@ truncate spark_streaming.messages;
 
 
 
-# === Kafka python ACL ========================================================================
-docker compose up -d kafka
-
-docker cp kafka:/opt/bitnami/kafka/config/server.properties .
-# -> server.properties
-
-
-
-# === git
+# === git =========================================================
 git init
 touch .gitignore && code .gitignore
 git add .
@@ -104,3 +93,53 @@ git push --set-upstream origin main
 touch README.MD && code README.MD
 
 git add . && git commit -m "update" && git push
+
+
+# === Kafka python ACL ========================================================================
+# no ACL with Kraft mode !
+
+git checkout -b zookeeper_mode
+
+# -> docker-compose
+docker compose up -d zookeeper 
+docker compose up -d zookeeper broker 
+docker compose up -d zookeeper broker schema-registry 
+docker compose up -d zookeeper broker schema-registry control-center
+
+# docker create topic
+docker exec broker kafka-topics --create --topic test-topic --bootstrap-server broker:9092
+
+# python producer
+python3 python1_producer.py "allo"
+
+# deploy pipeline
+docker compose up -d zookeeper broker schema-registry control-center spark-master spark-worker cassandra
+
+# start spark streaming
+docker exec -it spark-master /bin/bash -c "spark-submit --master local --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.4.1,com.datastax.spark:spark-cassandra-connector_2.12:3.4.1 /opt/bitnami/pyspark_scripts/spark_streaming.py"
+
+# send a message
+python3 python1_producer.py "message without h_elp word"
+python3 python1_producer.py "message with help word"
+
+# check cassandra
+docker exec -it cassandra /bin/bash
+cqlsh -u cassandra -p cassandra
+select value, destination_table from spark_streaming.help;
+select value, destination_table from spark_streaming.messages;
+
+# no insertion in cassandra
+# -> spark_streaming.py change "kafka:9092" to "broker:29092" and restart spark streaming
+
+docker compose down spark-master spark-worker
+docker compose up -d spark-master spark-worker
+docker exec -it spark-master /bin/bash -c "spark-submit --master local --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.4.1,com.datastax.spark:spark-cassandra-connector_2.12:3.4.1 /opt/bitnami/pyspark_scripts/spark_streaming.py"
+
+python3 python1_producer.py "without the word"
+python3 python1_producer.py "with help word"
+
+# check cassandra --> pipeline ok.
+
+
+# === Kafka python ACL 
+
