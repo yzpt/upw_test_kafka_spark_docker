@@ -1,4 +1,7 @@
-## see --> journal.sh
+To do:
+- [ ] Kafka ACL authentification
+
+<hr>
 
 ![./screenshot.png](./screenshot.png)
 
