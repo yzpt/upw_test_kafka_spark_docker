@@ -181,5 +181,16 @@ git checkout -b sasl
 # === SASL ==============================================================================
 https://jaehyeon.me/blog/2023-07-13-kafka-development-with-docker-part-10/
 
-docker compose up -d
+git add . && git commit -m "1st commit sasl branch"
+git push --set-upstream origin sasl
 
+git clone https://github.com/jaehyeon-kim/kafka-pocs.git
+
+cp kafka-pocs/kafka-dev-with-docker/part-10/generate.sh .
+cp kafka-pocs/kafka-dev-with-docker/part-10/kafka-hosts.txt .
+cp kafka-pocs/kafka-dev-with-docker/part-10/command.properties .
+cp kafka-pocs/kafka-dev-with-docker/part-10/client.properties .
+source generate.sh
+
+docker compose down
+docker compose up -d
