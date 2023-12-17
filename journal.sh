@@ -39,5 +39,17 @@ kafka-console-producer.sh --topic test-topic-auth --broker-list localhost:9092 -
 kafka-console-consumer.sh --topic test-topic-auth --bootstrap-server localhost:9092 --consumer.config /etc/kafka/alice-client.properties --from-beginning
 kafka-console-consumer.sh --topic test-topic-auth --bootstrap-server localhost:9092 --consumer.config /etc/kafka/madhu-client.properties --from-beginning
 
+# apply first ACLs
+kafka-acls.sh --bootstrap-server localhost:9092 --add --allow-principal User:alice --operation Read --allow-host '*' --topic test-topic-auth --command-config /etc/kafka/admin-client.properties
 
+# And now the following attempt which succeeded before, will now fail.
+kafka-console-producer.sh --topic test-topic-auth --broker-list localhost:9092 --producer.config /etc/kafka/alice-client.properties
 
+# Let’s continue with our desired outcome and set ACLs for Madhu to be able to both produce and consumer from the Kafka topic.
+kafka-acls.sh --bootstrap-server localhost:9092 --add --allow-principal User:madhu --operation Read --operation Write --allow-host '*' --topic test-topic-auth --command-config /etc/kafka/admin-client.properties
+# Notice how we are passing in two operation variable values in the above command.
+
+# Let’s confirm Madhu can still produce to the topic.
+kafka-console-producer.sh --topic test-topic-auth --broker-list localhost:9092 --producer.config /etc/kafka/madhu-client.properties
+
+# === Kafka ACL Access Control Global Configuration Options ===========================================
