@@ -1,11 +1,13 @@
+import sys
 import os
-from kafka import KafkaProducer, KafkaConsumer
+from kafka import KafkaProducer
 
-BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092").split(",")
+BOOTSTRAP_SERVERS = "localhost:9092"
 
-TOPIC_NAME="test-topic-auth"
-SASL_USERNAME="madhu"
-SASL_PASSWORD="madhu-secret"
+TOPIC_NAME="test-topic"
+
+SASL_USERNAME="alice"
+SASL_PASSWORD="alice-secret"
 
 
 def produce():
@@ -16,6 +18,7 @@ def produce():
         sasl_plain_password=SASL_PASSWORD, 
         bootstrap_servers=BOOTSTRAP_SERVERS
         )
+    
     producer.send(TOPIC_NAME, b'some_message_bytes')
     producer.flush()
     print('Message published successfully')

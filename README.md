@@ -76,4 +76,44 @@ https://gist.github.com/alexlopes/72fea4e4da623ef8f60a800d6a962f2f
 
 git add . && git commit -m "test auth python client sasl plaintext with acl ok"
 git push --set-upstream origin zookeeper_acl
+
+git checkout -b zookeeper_acl_backup
+git checkout zookeeper_acl
+
+# === project implementation =========================================================================
+# -> docker-compose.yml
+docker compose up -d
+docker exec -it upw_test_docker_kafka_spark_nosql-kafka-1 /bin/bash
+
+# create topic with admin-client.properties
+kafka-topics.sh --create --topic test-topic --bootstrap-server localhost:9092 --command-config /etc/kafka/admin-client.properties
+
+# set ACLs with admin-client.properties, allow alice to read and write
+kafka-acls.sh \
+    --bootstrap-server localhost:9092 \
+    --add \
+    --allow-principal User:alice \
+    --operation Read \
+    --operation Write \
+    --allow-host '*' \
+    --topic test-topic \
+    --command-config /etc/kafka/admin-client.properties
+
+# set ACLs with admin-client.properties, allow madhu to read only
+kafka-acls.sh \
+    --bootstrap-server localhost:9092 \
+    --add \
+    --allow-principal User:madhu \
+    --operation Read \
+    --allow-host '*' \
+    --topic test-topic \
+    --command-config /etc/kafka/admin-client.properties
+
+# admin consumer
+kafka-console-consumer.sh --topic test-topic --bootstrap-server localhost:9092 --consumer.config /etc/kafka/admin-client.properties --from-beginning
+
+# python producer
+python3 python1_producer.py
+
+# ok !
 ```
