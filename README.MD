@@ -1,5 +1,8 @@
 To do:
-- [ ] Kafka ACL authentification
+- [ ] Kafka authentification (SASL)
+- [ ] Kafka ACL authorization
+
+## ongoing : zookeeper_acl branch
 
 <hr>
 
@@ -221,4 +224,3 @@ see zookeeper_acl branch
 
 ```
 
-## ongoing : zookeeper_acl branch
