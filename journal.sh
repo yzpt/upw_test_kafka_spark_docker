@@ -66,3 +66,6 @@ https://gist.github.com/alexlopes/72fea4e4da623ef8f60a800d6a962f2f
 # -> python2_consumer.py
 
 # python producer & consumer with sasl plaintext auth ok, authorization ok, see also py_admin_acl.py for administration.
+
+git add . && git commit -m "test auth python client sasl plaintext with acl ok"
+git push --set-upstream origin zookeeper_acl
