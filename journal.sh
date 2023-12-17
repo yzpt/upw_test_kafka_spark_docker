@@ -1,6 +1,6 @@
 git clone https://github.com/supergloo/kafka-examples.git
 
-# 1. authentification
+# === 1. Authentification ============================================================================
 https://supergloo.com/kafka-tutorials/kafka-authentication/
 
 cp kafka-examples/authentication/* .
@@ -15,4 +15,7 @@ kafka-topics.sh --list test-topic-auth  --bootstrap-server localhost:9092 --comm
 git add . && git commit -m "authentification ok"
 git push --set-upstream origin zookeeper_acl
 
+
+# 2. === Authorization ================================================================================
+https://supergloo.com/kafka-tutorials/kafka-acl/
 
