@@ -216,5 +216,9 @@ git push --set-upstream origin main
 https://docs.confluent.io/platform/current/kafka/authorization.html
 
 
+# === Kafka ACL authentification ========================================================
+see zookeeper_acl branch
+
 ```
 
+## ongoing : zookeeper_acl branch
