@@ -3,3 +3,4 @@ venv*
 checkpoint/
 z*
 kafka-pocs/
+kafka-examples/
