@@ -1,165 +1,139 @@
-version: "3.8"
+version: "3.5"
+
 services:
-
-# === kafka ===========================================================
-  # kafka:
-  #   image: bitnami/kafka
-  #   container_name: kafka
-  #   ports:
-  #     - 9092:9092
-  #   environment:
-  #     - KAFKA_ENABLE_KRAFT=yes
-  #     - KAFKA_CFG_PROCESS_ROLES=broker,controller
-  #     - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-  #     - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:2181
-  #     - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-  #     - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
-  #     - KAFKA_BROKER_ID=1
-  #     - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@127.0.0.1:2181
-  #     - ALLOW_PLAINTEXT_LISTENER=yes
-  #     - KAFKA_CFG_NODE_ID=1
-  #     - KAFKA_KRAFT_CLUSTER_ID=MkU3OEVBNTcwNTJENDM2Qk
-  #   networks:
-  #     - cluster
   zookeeper:
-      image: confluentinc/cp-zookeeper:7.4.0
-      hostname: zookeeper
-      container_name: zookeeper
-      ports:
-        - "2181:2181"
-      environment:
-        ZOOKEEPER_CLIENT_PORT: 2181
-        ZOOKEEPER_TICK_TIME: 2000
-      networks:
-        - cluster
-
-  broker:
-    image: confluentinc/cp-kafka:7.4.0
-    hostname: broker
-    container_name: broker
+    image: bitnami/zookeeper:3.5
+    container_name: zookeeper
+    ports:
+      - "2181"
+    networks:
+      - kafkanet
+    environment:
+      - ZOO_ENABLE_AUTH=yes
+      - ZOO_SERVER_USERS=admin
+      - ZOO_SERVER_PASSWORDS=password
+    volumes:
+      - zookeeper_data:/bitnami/zookeeper
+  kafka-0:
+    image: bitnami/kafka:2.8.1
+    container_name: kafka-0
+    expose:
+      - 9092
+      - 9093
+      - 9094
+    ports:
+      - "29092:29092"
+    networks:
+      - kafkanet
+    environment:
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_BROKER_ID=0
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,SSL:SSL,SASL_SSL:SASL_SSL,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=INTERNAL://:9092,SSL://:9093,SASL_SSL://:9094,EXTERNAL://:29092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka-0:9092,SSL://kafka-0:9093,SASL_SSL://kafka-0:9094,EXTERNAL://localhost:29092
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=SSL
+      - KAFKA_CFG_SSL_KEYSTORE_LOCATION=/opt/bitnami/kafka/config/certs/kafka.keystore.jks
+      - KAFKA_CFG_SSL_KEYSTORE_PASSWORD=supersecret
+      - KAFKA_CFG_SSL_KEY_PASSWORD=supersecret
+      - KAFKA_CFG_SSL_TRUSTSTORE_LOCATION=/opt/bitnami/kafka/config/certs/kafka.truststore.jks
+      - KAFKA_CFG_SSL_TRUSTSTORE_PASSWORD=supersecret
+      - KAFKA_CFG_SASL_ENABLED_MECHANISMS=SCRAM-SHA-256
+      - KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL=SCRAM-SHA-256
+    volumes:
+      - kafka_0_data:/bitnami/kafka
+      - ./keystore/kafka-0.server.keystore.jks:/opt/bitnami/kafka/config/certs/kafka.keystore.jks:ro
+      - ./truststore/kafka.truststore.jks:/opt/bitnami/kafka/config/certs/kafka.truststore.jks:ro
+      - ./kafka_jaas.conf:/opt/bitnami/kafka/config/kafka_jaas.conf:ro
+      - ./client.properties:/opt/bitnami/kafka/config/client.properties:ro
+      - ./command.properties:/opt/bitnami/kafka/config/command.properties:ro
     depends_on:
       - zookeeper
+  kafka-1:
+    image: bitnami/kafka:2.8.1
+    container_name: kafka-1
+    expose:
+      - 9092
+      - 9093
+      - 9094
     ports:
-      - "9092:9092"
-      - "9093:9093"
-      - "9101:9101"
-    volumes:
-      - ./configs/kafka_server_jaas.conf:/etc/kafka/configs/kafka_server_jaas.conf
-      - ./configs/config.properties:/etc/kafka/configs/config.properties
+      - "29093:29093"
+    networks:
+      - kafkanet
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      ZOOKEEPER_SASL_ENABLED: 'false'
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,SASL_PLAINTEXT://localhost:9093
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,SASL_PLAINTEXT:SASL_PLAINTEXT
-      KAFKA_SECURITY_INTER_BROKER_PROTOCOL: SASL_PLAINTEXT
-      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
-      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
-      KAFKA_OPTS: "-Djava.security.auth.login.config=/etc/kafka/configs/kafka_server_jaas.conf"
-    networks:
-      - cluster
-
-
-  # schema-registry:
-  #   image: confluentinc/cp-schema-registry:7.4.0
-  #   hostname: schema-registry
-  #   container_name: schema-registry
-  #   depends_on:
-  #     broker:
-  #       condition: service_healthy
-  #   ports:
-  #     - "8081:8081"
-  #   environment:
-  #     SCHEMA_REGISTRY_HOST_NAME: schema-registry
-  #     SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
-  #     SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
-  #   networks:
-  #     - cluster
-  #   healthcheck:
-  #     test: [ "CMD", "curl", "-f", "http://localhost:8081/" ]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 5
-
-  # control-center:
-  #   image: confluentinc/cp-enterprise-control-center:7.4.0
-  #   hostname: control-center
-  #   container_name: control-center
-  #   depends_on:
-  #     broker:
-  #       condition: service_healthy
-  #     schema-registry:
-  #       condition: service_healthy
-  #   ports:
-  #     - "9021:9021"
-  #   environment:
-  #     CONTROL_CENTER_BOOTSTRAP_SERVERS: 'broker:29092'
-  #     CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
-  #     CONTROL_CENTER_REPLICATION_FACTOR: 1
-  #     CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
-  #     CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
-  #     CONFLUENT_METRICS_TOPIC_REPLICATION: 1
-  #     CONFLIENT_METRICS_ENABLE: 'false'
-  #     PORT: 9021
-  #   networks:
-  #     - cluster
-  #   healthcheck:
-  #     test: [ "CMD", "curl", "-f", "http://localhost:9021/health" ]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 5
-
-
-
-
-# === Spark =======
-  spark-master:
-    image: bitnami/spark:3.4.1
-    container_name: spark-master
-    ports:
-      - "9090:8080"
-      - "7077:7077"
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_BROKER_ID=1
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,SSL:SSL,SASL_SSL:SASL_SSL,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=INTERNAL://:9092,SSL://:9093,SASL_SSL://:9094,EXTERNAL://:29093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka-1:9092,SSL://kafka-1:9093,SASL_SSL://kafka-1:9094,EXTERNAL://localhost:29093
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=SSL
+      - KAFKA_CFG_SSL_KEYSTORE_LOCATION=/opt/bitnami/kafka/config/certs/kafka.keystore.jks
+      - KAFKA_CFG_SSL_KEYSTORE_PASSWORD=supersecret
+      - KAFKA_CFG_SSL_KEY_PASSWORD=supersecret
+      - KAFKA_CFG_SSL_TRUSTSTORE_LOCATION=/opt/bitnami/kafka/config/certs/kafka.truststore.jks
+      - KAFKA_CFG_SSL_TRUSTSTORE_PASSWORD=supersecret
+      - KAFKA_CFG_SASL_ENABLED_MECHANISMS=SCRAM-SHA-256
+      - KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL=SCRAM-SHA-256
     volumes:
-      - ./spark_entrypoint.sh:/entrypoint.sh
-      - ./spark_streaming.py:/opt/bitnami/pyspark_scripts/spark_streaming.py
-      - ./vol_spark_checkpoint:/opt/bitnami/pyspark_scripts/checkpoint
-    command: ["/bin/bash", "/entrypoint.sh"]
-    networks:
-      - cluster
-  
-  spark-worker:
-    image: bitnami/spark:3.4.1
-    container_name: spark-worker
-    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+      - kafka_1_data:/bitnami/kafka
+      - ./keystore/kafka-1.server.keystore.jks:/opt/bitnami/kafka/config/certs/kafka.keystore.jks:ro
+      - ./truststore/kafka.truststore.jks:/opt/bitnami/kafka/config/certs/kafka.truststore.jks:ro
+      - ./kafka_jaas.conf:/opt/bitnami/kafka/config/kafka_jaas.conf:ro
+      - ./client.properties:/opt/bitnami/kafka/config/client.properties:ro
+      - ./command.properties:/opt/bitnami/kafka/config/command.properties:ro
     depends_on:
-      - spark-master
-    environment:
-      SPARK_MODE: worker
-      SPARK_WORKER_CORES: 2
-      SPARK_WORKER_MEMORY: 1g
-      SPARK_MASTER_URL: spark://spark-master:7077
-    networks:
-      - cluster
-
-
-
-# === Cassandra ====================================================================================================
-  cassandra:
-    image: cassandra:5.0
-    container_name: cassandra
-    hostname: cassandra
-    volumes:
-      - ./vol_cassandra_data:/var/lib/cassandra
+      - zookeeper
+  kafka-2:
+    image: bitnami/kafka:2.8.1
+    container_name: kafka-2
+    expose:
+      - 9092
+      - 9093
+      - 9094
     ports:
-      - 9042:9042
-    environment:
-      - MAX_HEAP_SIZE=512M
-      - HEAP_NEWSIZE=100M
-      - CASSANDRA_USERNAME=cassandra
-      - CASSANDRA_PASSWORD=cassandra
+      - "29094:29094"
     networks:
-      - cluster
+      - kafkanet
+    environment:
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_BROKER_ID=2
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,SSL:SSL,SASL_SSL:SASL_SSL,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=INTERNAL://:9092,SSL://:9093,SASL_SSL://:9094,EXTERNAL://:29094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka-2:9092,SSL://kafka-2:9093,SASL_SSL://kafka-2:9094,EXTERNAL://localhost:29094
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=SSL
+      - KAFKA_CFG_SSL_KEYSTORE_LOCATION=/opt/bitnami/kafka/config/certs/kafka.keystore.jks
+      - KAFKA_CFG_SSL_KEYSTORE_PASSWORD=supersecret
+      - KAFKA_CFG_SSL_KEY_PASSWORD=supersecret
+      - KAFKA_CFG_SSL_TRUSTSTORE_LOCATION=/opt/bitnami/kafka/config/certs/kafka.truststore.jks
+      - KAFKA_CFG_SSL_TRUSTSTORE_PASSWORD=supersecret
+      - KAFKA_CFG_SASL_ENABLED_MECHANISMS=SCRAM-SHA-256
+      - KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL=SCRAM-SHA-256
+    volumes:
+      - kafka_2_data:/bitnami/kafka
+      - ./keystore/kafka-2.server.keystore.jks:/opt/bitnami/kafka/config/certs/kafka.keystore.jks:ro
+      - ./truststore/kafka.truststore.jks:/opt/bitnami/kafka/config/certs/kafka.truststore.jks:ro
+      - ./kafka_jaas.conf:/opt/bitnami/kafka/config/kafka_jaas.conf:ro
+      - ./client.properties:/opt/bitnami/kafka/config/client.properties:ro
+      - ./command.properties:/opt/bitnami/kafka/config/command.properties:ro
+    depends_on:
+      - zookeeper
 
 networks:
-  cluster:
-    
+  kafkanet:
+    name: kafka-network
+
+volumes:
+  zookeeper_data:
+    driver: local
+    name: zookeeper_data
+  kafka_0_data:
+    driver: local
+    name: kafka_0_data
+  kafka_1_data:
+    driver: local
+    name: kafka_1_data
+  kafka_2_data:
+    driver: local
+    name: kafka_2_data

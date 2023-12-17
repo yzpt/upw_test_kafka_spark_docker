@@ -175,3 +175,11 @@ kafka-topics --create --topic allo-topic --bootstrap-server broker:9093 --replic
 # === stop
 git add . && git commit -m "stop, go SASL branch"
 git push --set-upstream origin acl
+
+git checkout -b sasl
+
+# === SASL ==============================================================================
+https://jaehyeon.me/blog/2023-07-13-kafka-development-with-docker-part-10/
+
+docker compose up -d
+
