@@ -52,4 +52,17 @@ kafka-acls.sh --bootstrap-server localhost:9092 --add --allow-principal User:mad
 # Let’s confirm Madhu can still produce to the topic.
 kafka-console-producer.sh --topic test-topic-auth --broker-list localhost:9092 --producer.config /etc/kafka/madhu-client.properties
 
-# === Kafka ACL Access Control Global Configuration Options ===========================================
+# madhu consumer
+kafka-console-consumer.sh --topic test-topic-auth --bootstrap-server localhost:9092 --consumer.config /etc/kafka/madhu-client.properties --from-beginning
+
+docker exec -it upw_test_docker_kafka_spark_nosql-kafka-1 /bin/bash
+kafka-console-consumer.sh --topic test-topic-auth --bootstrap-server localhost:9092 --consumer.config /etc/kafka/madhu-client.properties --from-beginning
+
+
+
+# === python producer & consumer =====================================================================
+https://gist.github.com/alexlopes/72fea4e4da623ef8f60a800d6a962f2f
+# -> python1_producer.py
+# -> python2_consumer.py
+
+# python producer & consumer with sasl plaintext auth ok, authorization ok, see also py_admin_acl.py for administration.
