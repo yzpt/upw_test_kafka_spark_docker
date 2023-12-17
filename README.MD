@@ -93,5 +93,7 @@ truncate spark_streaming.messages;
 # data insertion ok !
 
 # === SASL ========================================================================
+https://jaehyeon.me/blog/2023-07-13-kafka-development-with-docker-part-10/
+
 
 ```
