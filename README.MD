@@ -214,7 +214,7 @@ docker compose up -d
 git checkout main
 
 # === Back to KRaft mode with ACL ========================================================
-git add . && git commit -m "-"
+git add . && git commit -m "on going --> zookeeper_acl branch"
 git push --set-upstream origin main
 
 https://docs.confluent.io/platform/current/kafka/authorization.html
