@@ -1,10 +1,5 @@
 # Kafka Authorization by Example
 
-Well, well, well, let's have ourselves a Kafka ACL example party. ;) 
+[https://supergloo.com/kafka-tutorials/kafka-acl-authorization](https://supergloo.com/kafka-tutorials/kafka-acl-authorization/)
 
-[Kafka Authorization Tutorial](https://supergloo.com/kafka-tutorials/kafka-acl-authorization/)
-
-The Kafka ACL tutorial linked above uses the config files used in this directory.
-
-I know, you are completely shocked right?
-
+# work --> [journal.sh](journal.sh)
