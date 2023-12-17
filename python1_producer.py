@@ -3,7 +3,14 @@ import sys
 
 if __name__ == "__main__":
     try:
-        producer = KafkaProducer(bootstrap_servers='localhost:9092')
+        # producer = KafkaProducer(bootstrap_servers='localhost:9092')
+        producer = KafkaProducer(
+            bootstrap_servers='localhost:9092',
+            security_protocol="SASL_PLAINTEXT",
+            sasl_mechanism="PLAIN",
+            sasl_plain_username="admin",
+            sasl_plain_password="admin-secret",
+        )
     
         message = sys.argv[1]
         

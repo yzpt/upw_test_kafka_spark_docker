@@ -143,5 +143,34 @@ git add . && git commit -m "zookeeper mode pipeline ok"
 git push --set-upstream origin zookeeper_mode
 
 # === ACL ==============================================================================
+# https://www.youtube.com/watch?v=bj5SKXanaAI
 
+docker compose down
+docker compose up -d zookeeper broker
 
+mkdir configs
+touch configs/kafka_server_jaas.conf && code configs/kafka_server_jaas.conf
+# --- kafka_server_jaas.conf ---
+KafkaServer {
+    org.apache.kafka.common.security.plain.PlainLoginModule required
+    username="admin"
+    password="pass123"
+    user_kafka="pass123";
+}
+# ------------------------------
+
+touch configs/config.properties && code configs/config.properties
+# --- config.properties ---
+sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="pass123";
+security.protocol=SASL_PLAINTEXT
+sasl.mechanism=PLAIN
+# ------------------------------
+
+docker compose down
+docker compose up -d zookeeper broker
+
+docker exec -it broker /bin/bash
+kafka-topics --create --topic allo-topic --bootstrap-server broker:9093 --replication-factor 1 --partitions 1 --command-config /etc/kafka/configs/config.properties
+
+# === stop
+git add . && git commit -m "stop, go SASL branch"
