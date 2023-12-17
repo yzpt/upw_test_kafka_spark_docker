@@ -139,7 +139,8 @@ python3 python1_producer.py "without the word"
 python3 python1_producer.py "with help word"
 
 # check cassandra --> pipeline ok.
-
+git add . && git commit -m "zookeeper mode pipeline ok"
+git push --set-upstream origin zookeeper_mode
 
 # === ACL ==============================================================================
 
