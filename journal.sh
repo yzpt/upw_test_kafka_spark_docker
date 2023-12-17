@@ -95,7 +95,7 @@ touch README.MD && code README.MD
 git add . && git commit -m "update" && git push
 
 
-# === Kafka python ACL ========================================================================
+# === Zookeeper mode ========================================================================
 # no ACL with Kraft mode !
 
 git checkout -b zookeeper_mode
@@ -141,5 +141,6 @@ python3 python1_producer.py "with help word"
 # check cassandra --> pipeline ok.
 
 
-# === Kafka python ACL 
+# === ACL ==============================================================================
+
 
