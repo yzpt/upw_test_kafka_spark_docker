@@ -138,9 +138,6 @@ docker exec -it spark-master /bin/bash -c "spark-submit --master local --package
 # -> https://stackoverflow.com/questions/61481628/spark-structured-streaming-with-kafka-sasl-plain-authentication
 # -> spark_streaming.py
 
-git add . && git commit -m "python client & Kafka ACL ok, cannot streaming drom kafka to spark"
-git push --set-upstream origin zookeeper_acl 
-
 
 # === monday ===
 # kafka doesn't work
@@ -174,5 +171,7 @@ docker compose up -d spark-master spark-worker
 docker exec -it spark-master /bin/bash -c "spark-submit --master local --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.4.1,com.datastax.spark:spark-cassandra-connector_2.12:3.4.1 /opt/bitnami/pyspark_scripts/spark_streaming.py"
 # no
 
+git add . && git commit -m "python client & Kafka ACL ok, cannot streaming drom kafka to spark"
+git push --set-upstream origin zookeeper_acl 
 
 ```
