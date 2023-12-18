@@ -139,6 +139,7 @@ docker exec -it spark-master /bin/bash -c "spark-submit --master local --package
 # -> https://stackoverflow.com/questions/61481628/spark-structured-streaming-with-kafka-sasl-plain-authentication
 # -> spark_streaming.py
 
-git add . && git commit -m "spark streaming sasl auth doesn't work"
+git add . && git commit -m "spark streaming with sasl auth doesn't work"
+git push --set-upstream origin zookeeper_acl
 
 ```
