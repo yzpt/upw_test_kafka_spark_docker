@@ -2,7 +2,6 @@
 
 [https://supergloo.com/kafka-tutorials/kafka-acl-authorization](https://supergloo.com/kafka-tutorials/kafka-acl-authorization/)
 
-# work --> [journal.sh](journal.sh)
 
 ```bash
 git clone https://github.com/supergloo/kafka-examples.git
@@ -87,7 +86,7 @@ docker compose up -d
 docker exec -it kafka /bin/bash
 
 # create topic with admin-client.properties
-kafka-topics.sh --create --topic test-topic --bootstrap-server localhost:9092 --command-config /etc/kafka/admin-client.properties
+kafka-topics.sh --create --topic allo-topic --bootstrap-server localhost:9092 --command-config /etc/kafka/admin-client.properties
 
 # set ACLs with admin-client.properties, allow alice to read and write
 kafka-acls.sh \
@@ -139,7 +138,41 @@ docker exec -it spark-master /bin/bash -c "spark-submit --master local --package
 # -> https://stackoverflow.com/questions/61481628/spark-structured-streaming-with-kafka-sasl-plain-authentication
 # -> spark_streaming.py
 
-git add . && git commit -m "spark streaming with sasl auth doesn't work"
-git push --set-upstream origin zookeeper_acl
+git add . && git commit -m "python client & Kafka ACL ok, cannot streaming drom kafka to spark"
+git push --set-upstream origin zookeeper_acl 
+
+
+# === monday ===
+# kafka doesn't work
+docker compose up -d kafka zookeeper
+
+docker exec -it kafka /bin/bash
+kafka-topics.sh --create --topic essai --bootstrap-server localhost:9092 --command-config /etc/kafka/admin-client.properties
+ 
+# producer admin properties
+kafka-console-producer.sh --topic essai --broker-list localhost:9092 --producer.config /etc/kafka/admin-client.properties
+# consumer
+kafka-console-consumer.sh --topic essai --bootstrap-server localhost:9092 --consumer.config /etc/kafka/admin-client.properties --from-beginning
+# ok
+
+# python producer with alice properties
+python3 python1_producer.py "essai" "message from python producer"
+# consumer with alice properties
+docker exec -it kafka /bin/bash
+kafka-console-consumer.sh --topic essai --bootstrap-server localhost:9092 --consumer.config /etc/kafka/alice-client.properties --from-beginning
+# ok
+
+
+# === try spark streaming write to console =========================================================
+# with spark-streaing.py -> 'kafka.bootstrap.servers': 'localhost:9092' option
+docker compose up -d spark-master spark-worker
+docker exec -it spark-master /bin/bash -c "spark-submit --master local --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.4.1,com.datastax.spark:spark-cassandra-connector_2.12:3.4.1 /opt/bitnami/pyspark_scripts/spark_streaming.py"
+# no
+
+# with spark-streaming.py -> 'kafka.bootstrap.servers': 'kafka:9092' option
+docker compose up -d spark-master spark-worker
+docker exec -it spark-master /bin/bash -c "spark-submit --master local --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.4.1,com.datastax.spark:spark-cassandra-connector_2.12:3.4.1 /opt/bitnami/pyspark_scripts/spark_streaming.py"
+# no
+
 
 ```

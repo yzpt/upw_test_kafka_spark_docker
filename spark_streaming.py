@@ -44,7 +44,7 @@ def create_initial_dataframe(spark_session):
             'kafka.sasl.jaas.config': 'org.apache.kafka.common.security.plain.PlainLoginModule required username="alice" password="alice-secret";',
             'kafka.sasl.mechanism': 'PLAIN',
             'kafka.security.protocol' : 'SASL_PLAINTEXT',
-            'kafka.bootstrap.servers': 'localhost:9092',
+            'kafka.bootstrap.servers': 'kafka:9092',
             'subscribe': 'test-topic',
             'delimeter': ',',
             'startingOffsets': 'earliest',
@@ -151,10 +151,10 @@ def write_streaming_data():
     df          = create_initial_dataframe(spark)
 
     
-    start_console_streaming(df)
+    # start_console_streaming(df)
     
-    # df_final    = create_final_dataframe(df, spark)
-    # start_cassandra_streaming(df_final)
+    df_final    = create_final_dataframe(df, spark)
+    start_cassandra_streaming(df_final)
 
 if __name__ == '__main__':
     try:
