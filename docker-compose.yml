@@ -2,6 +2,7 @@ version: "3.8"
 services:
 # === kafka ===========================================================
   zookeeper:
+    container_name: zookeeper
     image: wurstmeister/zookeeper
     ports:
       - "2181:2181"
@@ -9,6 +10,7 @@ services:
       - cluster
 
   kafka:
+    container_name: kafka
     image: wurstmeister/kafka
     ports:
       - "9092:9092"
@@ -47,6 +49,7 @@ services:
       - ./spark_entrypoint.sh:/entrypoint.sh
       - ./spark_streaming.py:/opt/bitnami/pyspark_scripts/spark_streaming.py
       - ./vol_spark_checkpoint:/opt/bitnami/pyspark_scripts/checkpoint
+      - ./kafka_broker_jaas.conf:/opt/bitnami/spark/conf/kafka_broker_jaas.conf
     command: ["/bin/bash", "/entrypoint.sh"]
     networks:
       - cluster

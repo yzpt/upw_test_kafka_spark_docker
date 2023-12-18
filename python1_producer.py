@@ -10,7 +10,7 @@ SASL_USERNAME="alice"
 SASL_PASSWORD="alice-secret"
 
 
-def produce():
+def produce(message):
     producer = KafkaProducer(
         security_protocol="SASL_PLAINTEXT",  
         sasl_mechanism="PLAIN", 
@@ -19,9 +19,15 @@ def produce():
         bootstrap_servers=BOOTSTRAP_SERVERS
         )
     
-    producer.send(TOPIC_NAME, b'some_message_bytes')
+    producer.send(TOPIC_NAME, message.encode())
     producer.flush()
     print('Message published successfully')
 
 if __name__ == "__main__":
-    produce()
+    try:
+        message = sys.argv[1]
+        produce(message)
+    except Exception as e:
+        print(f"Couldn't publish the message due to exception: {e}")
+        print('use: python python1_producer.py "message content"')
+        sys.exit(1)

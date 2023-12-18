@@ -1,7 +1,7 @@
 import os
-from kafka import KafkaProducer, KafkaConsumer
+from kafka import KafkaConsumer
 
-BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092").split(",")
+BOOTSTRAP_SERVERS = "localhost:9092"
 
 TOPIC_NAME="test-topic-auth"
 SASL_USERNAME="madhu"

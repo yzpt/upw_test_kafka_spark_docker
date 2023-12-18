@@ -14,8 +14,9 @@ cp kafka-examples/authentication/* .
 
 docker compose -f kafka-authn-example.yml up -d
 docker exec -it upw_test_docker_kafka_spark_nosql-kafka-1 /bin/bash
+docker exec -it kafka /bin/bash
 
-kafka-topics.sh --create --topic test-topic-auth  --bootstrap-server localhost:9092 --command-config etc/kafka/client.properties
+kafka-topics.sh --create --topic test-topic  --bootstrap-server localhost:9092 --command-config etc/kafka/client.properties
 kafka-topics.sh --list test-topic-auth  --bootstrap-server localhost:9092 --command-config etc/kafka/client.properties
 # ok !
 
@@ -74,7 +75,7 @@ https://gist.github.com/alexlopes/72fea4e4da623ef8f60a800d6a962f2f
 
 # python producer & consumer with sasl plaintext auth ok, authorization ok, see also py_admin_acl.py for administration.
 
-git add . && git commit -m "test auth python client sasl plaintext with acl ok"
+git add . && git commit -m "python client & Kafka ACL ok, spark streaming doesn't work"
 git push --set-upstream origin zookeeper_acl
 
 git checkout -b zookeeper_acl_backup
@@ -83,7 +84,7 @@ git checkout zookeeper_acl
 # === project implementation =========================================================================
 # -> docker-compose.yml
 docker compose up -d
-docker exec -it upw_test_docker_kafka_spark_nosql-kafka-1 /bin/bash
+docker exec -it kafka /bin/bash
 
 # create topic with admin-client.properties
 kafka-topics.sh --create --topic test-topic --bootstrap-server localhost:9092 --command-config /etc/kafka/admin-client.properties
@@ -112,8 +113,57 @@ kafka-acls.sh \
 # admin consumer
 kafka-console-consumer.sh --topic test-topic --bootstrap-server localhost:9092 --consumer.config /etc/kafka/admin-client.properties --from-beginning
 
+# alice consumer
+kafka-console-consumer.sh --topic test-topic --bootstrap-server localhost:9092 --consumer.config /etc/kafka/alice-client.properties --from-beginning
+
 # python producer
-python3 python1_producer.py
+python3 python1_producer.py "message"
 
 # ok !
+cp ~/Downloads/spark_streaming.py .
+docker compose up -d
+
+#  === Cassandra ========================================================================
+docker exec -it cassandra /bin/bash
+cqlsh -u cassandra -p cassandra
+CREATE KEYSPACE spark_streaming WITH replication = {'class':'SimpleStrategy','replication_factor':1};
+
+DROP TABLE spark_streaming.help;
+DROP TABLE spark_streaming.messages;
+
+# create help table
+CREATE TABLE spark_streaming.help(
+    id uuid PRIMARY KEY,
+    content text,
+    value text,
+    timestamp text,
+    destination_table text
+);
+
+# create messages table
+CREATE TABLE spark_streaming.messages(
+    id uuid PRIMARY KEY,
+    content text,
+    value text,
+    timestamp text,
+    destination_table text
+);
+
+select value, destination_table from spark_streaming.help;
+select value, destination_table from spark_streaming.messages;
+
+truncate spark_streaming.help;
+truncate spark_streaming.messages;
+
+
+# === Spark =================================================================================
+docker compose down spark-master spark-worker
+docker compose up -d spark-master spark-worker
+
+# https://stackoverflow.com/questions/61481628/spark-structured-streaming-with-kafka-sasl-plain-authentication
+docker exec -it spark-master /bin/bash -c "spark-submit --master local --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.4.1,com.datastax.spark:spark-cassandra-connector_2.12:3.4.1 /opt/bitnami/pyspark_scripts/spark_streaming.py"
+
+# doesn't seems to connect to kafka
+# -> https://stackoverflow.com/questions/61481628/spark-structured-streaming-with-kafka-sasl-plain-authentication
+# -> spark_streaming.py
 ```
