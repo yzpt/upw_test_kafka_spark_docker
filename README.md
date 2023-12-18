@@ -119,44 +119,16 @@ kafka-console-consumer.sh --topic test-topic --bootstrap-server localhost:9092 -
 # python producer
 python3 python1_producer.py "message"
 
+
+
 # ok !
-cp ~/Downloads/spark_streaming.py .
-docker compose up -d
 
-#  === Cassandra ========================================================================
-docker exec -it cassandra /bin/bash
-cqlsh -u cassandra -p cassandra
-CREATE KEYSPACE spark_streaming WITH replication = {'class':'SimpleStrategy','replication_factor':1};
 
-DROP TABLE spark_streaming.help;
-DROP TABLE spark_streaming.messages;
 
-# create help table
-CREATE TABLE spark_streaming.help(
-    id uuid PRIMARY KEY,
-    content text,
-    value text,
-    timestamp text,
-    destination_table text
-);
-
-# create messages table
-CREATE TABLE spark_streaming.messages(
-    id uuid PRIMARY KEY,
-    content text,
-    value text,
-    timestamp text,
-    destination_table text
-);
-
-select value, destination_table from spark_streaming.help;
-select value, destination_table from spark_streaming.messages;
-
-truncate spark_streaming.help;
-truncate spark_streaming.messages;
 
 
 # === Spark =================================================================================
+cp ~/Downloads/spark_streaming.py .
 docker compose down spark-master spark-worker
 docker compose up -d spark-master spark-worker
 
@@ -166,4 +138,7 @@ docker exec -it spark-master /bin/bash -c "spark-submit --master local --package
 # doesn't seems to connect to kafka
 # -> https://stackoverflow.com/questions/61481628/spark-structured-streaming-with-kafka-sasl-plain-authentication
 # -> spark_streaming.py
+
+git add . && git commit -m "spark streaming sasl auth doesn't work"
+
 ```
